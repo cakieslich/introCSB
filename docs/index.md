@@ -7,6 +7,7 @@ Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://j
 ### Markdown
 
 Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+[Link](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 
 ```markdown
 Syntax highlighted code block
@@ -23,7 +24,6 @@ Syntax highlighted code block
 
 **Bold** and _Italic_ and `Code` text
 
-[Link](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 ![Image](src)
 
 ```
