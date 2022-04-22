@@ -11,28 +11,17 @@ This is a series of modules that are intended to provide simple interfaces to ex
 
 ### R Markdown Resources
 1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-2. [PropertiesOfUndirGraphs.html](https://cakieslich.github.io/introCSB/PropertiesOfUndirGraphs.html) 
-3. [PropertiesOfDirGraphs.html](https://cakieslich.github.io/introCSB/PropertiesOfDirGraphs.html) 
-4. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-5. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-6. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-7. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-8. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-9. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-10. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-11. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
-
-DiscreteModelsSIR.html
-MarkovModels.html
-ParameterEstimation.html
-StabilityLinearModels.html
-LinearApproximation.html
-StabilityNonLinearModels.html
-StabilitySsystemModels.html
-nullclines.html
-hysteresis.html
+2. [Properties of Undirected Graphs](https://cakieslich.github.io/introCSB/PropertiesOfUndirGraphs.html) 
+3. [Properties of Directed Graphs](https://cakieslich.github.io/introCSB/PropertiesOfDirGraphs.html) 
+4. [Discrete, Recursive Models](https://cakieslich.github.io/introCSB/DiscreteModelsSIR.html) 
+5. [Markov Models](https://cakieslich.github.io/introCSB/MarkovModels.html) 
+6. [Parameter Estimation](https://cakieslich.github.io/introCSB/ParameterEstimation.html) 
+7. [Stability of Linear Models](https://cakieslich.github.io/introCSB/StabilityLinearModels.html) 
+8. [Linear Approximation of Nonlinear Models](https://cakieslich.github.io/introCSB/LinearApproximation.html) 
+9. [Stability of Lotka-Volterra Models](https://cakieslich.github.io/introCSB/StabilityNonLinearModels.html) 
+10. [Stability of S-system Models](https://cakieslich.github.io/introCSB/StabilitySsystemModels.html) 
+11. [Nullcline Analysis](https://cakieslich.github.io/introCSB/nullclines.html) 
+12. [Analyzing Hysteresis](https://cakieslich.github.io/introCSB/hysteresis.html)   
 
 Citation
 Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
