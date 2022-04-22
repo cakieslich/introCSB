@@ -1,10 +1,10 @@
-## Welcome to GitHub Pages
+## Introduction to Comptutational Systems Biology
 
 This is a series of modules that are intended to provide simple interfaces to example systems models and to provide extra practice problems and are intended as a supplement the textbook: A First Course in Systems Biology . The textbook is not needed to be able to use these applications, but may be useful for further explanation.
 
 ### Markdown
 1. [Intro to Modeling](https://kieslich.shinyapps.io/sysBio1/): Provides interfaces to selected examples from Chapter 2: Introduction to Mathematical Modeling of A First Course in Systems  Biology. The expected outcomes of this module are (i) learn the parts of a model and (ii) practice predicting how perturbations to model inputs and parameters affect the model response.
-  * Intro to Modeling[Link](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+  * [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 
 Static Network Models
 Module 2: Static Network Models provides interfaces to example static network models in line with Chapter 3: Static Network Models of A First Course in Systems Biology. The expected outcomes of this module are (i) learn the basics of working with graphs; (ii) practice computing statistics based on graphs; (iii) practice using stoichiometric network models.
