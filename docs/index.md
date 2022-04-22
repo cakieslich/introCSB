@@ -1,4 +1,5 @@
 ## R resources for learning Comptutational Systems Biology
+On this page you will find a variety of resources for teaching/learning Computational Systems Biology that have been developed using the R statistical language. These resources include interactive modules that are generally applicable to learning the basics of systems biology modeling, as well as, coding examples for using R to develop and analyze various types of systems biology models. The coding examples also include R shiny examples, which provide a template for developing interactive interfaces for systems biology models. Source codes for all interfaces and coding examples are also available.
 
 ### R Shiny Interactive Modules 
 This is a series of modules that are intended to provide simple interfaces to example systems models and to provide extra practice problems and are intended as a supplement the textbook: A First Course in Systems Biology . The textbook is not needed to be able to use these applications, but may be useful for further explanation.
@@ -10,6 +11,8 @@ This is a series of modules that are intended to provide simple interfaces to ex
 5. [Analysis of Dynamic Models](https://kieslich.shinyapps.io/sysBio5/): Provides interfaces to example models described in Chapter 4: The Mathematics of Biological Systems of A First Course in Systems Biology. The expected outcomes of this module are to learn the fundamentals of stability analysis including: (i) linearization of nonlinear models, (ii) eigenvalue analysis. ([Source](https://github.com/cakieslich/introCSB/tree/main/SysBioModules/sysBio5))
 
 ### R Coding Examples by Topic
+Below is a list of links to HTML pages with coding examples for a range of topics related to developing and analysiing systems biology models. The examples cover developing systems diagrams and developing/analyzing ODE-based systems models.      
+
 1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 2. [Properties of Undirected Graphs](https://cakieslich.github.io/introCSB/PropertiesOfUndirGraphs.html) 
 3. [Properties of Directed Graphs](https://cakieslich.github.io/introCSB/PropertiesOfDirGraphs.html) 
@@ -24,6 +27,7 @@ This is a series of modules that are intended to provide simple interfaces to ex
 12. [Analyzing Hysteresis](https://cakieslich.github.io/introCSB/hysteresis.html)   
 
 ### R shiny examples
+
 1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R): Simple example of how to use R shiny to develop interactive interfaces for ODE-based models. ([Demo](https://kieslich.shinyapps.io/fishing/))
 2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk): Advanced example of how to use R shiny to develop interactive interfaces for ODE-based models. Includes the ability to export analysis from the model using an R markdown derived report in PDF format. ([Demo](https://kieslich.shinyapps.io/mapk/))
 
