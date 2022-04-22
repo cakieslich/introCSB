@@ -28,5 +28,5 @@ This is a series of modules that are intended to provide simple interfaces to ex
 1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R) 
 2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk) 
 
-Citation
+**Citation**
 Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
