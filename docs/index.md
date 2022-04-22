@@ -1,5 +1,6 @@
 ## Intro to Comptutational Systems Biology
 
+
 ### R Shiny Interactive Modules
 This is a series of modules that are intended to provide simple interfaces to example systems models and to provide extra practice problems and are intended as a supplement the textbook: A First Course in Systems Biology . The textbook is not needed to be able to use these applications, but may be useful for further explanation.
 
@@ -22,6 +23,10 @@ This is a series of modules that are intended to provide simple interfaces to ex
 10. [Stability of S-system Models](https://cakieslich.github.io/introCSB/StabilitySsystemModels.html) 
 11. [Nullcline Analysis](https://cakieslich.github.io/introCSB/nullclines.html) 
 12. [Analyzing Hysteresis](https://cakieslich.github.io/introCSB/hysteresis.html)   
+
+### R shiny examples
+1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R) 
+2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk) 
 
 Citation
 Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
