@@ -4,6 +4,7 @@ This is a series of modules that are intended to provide simple interfaces to ex
 
 ### Markdown
 1. [Intro to Modeling](https://kieslich.shinyapps.io/sysBio1/): Provides interfaces to selected examples from Chapter 2: Introduction to Mathematical Modeling of A First Course in Systems  Biology. The expected outcomes of this module are (i) learn the parts of a model and (ii) practice predicting how perturbations to model inputs and parameters affect the model response.
+
 **R Markdown Resources**
    * [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 
