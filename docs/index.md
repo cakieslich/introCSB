@@ -11,31 +11,32 @@ This is a series of modules that are intended to provide simple interfaces to ex
 
 ### R Markdown Resources
 1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+2. [PropertiesOfUndirGraphs.html](https://cakieslich.github.io/introCSB/PropertiesOfUndirGraphs.html) 
+3. [PropertiesOfDirGraphs.html](https://cakieslich.github.io/introCSB/PropertiesOfDirGraphs.html) 
+4. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+5. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+6. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+7. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+8. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+9. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+10. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+11. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
+1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 
+DiscreteModelsSIR.html
+MarkovModels.html
+ParameterEstimation.html
+StabilityLinearModels.html
+LinearApproximation.html
+StabilityNonLinearModels.html
+StabilitySsystemModels.html
+nullclines.html
+hysteresis.html
 
 Citation
 Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
 
-**All page numbers reference the Second Edition**
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-![Image](src)
-
-```
 
 For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
 
