@@ -26,7 +26,7 @@ This is a series of modules that are intended to provide simple interfaces to ex
 
 ### R shiny examples
 1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R): Simple example of how to use R shiny to develop interactive interfaces for ODE-based models. ([Demo](https://kieslich.shinyapps.io/fishing/))
-2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk): Advanced example of how to use R shiny to develop interactive interfaces for ODE-based models. Includes the ability to export analysis from the model using an R markdown derived report in PDF format. ([Demo](https://kieslich.shinyapps.io/mapk/)
+2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk): Advanced example of how to use R shiny to develop interactive interfaces for ODE-based models. Includes the ability to export analysis from the model using an R markdown derived report in PDF format. ([Demo](https://kieslich.shinyapps.io/mapk/))
 
 
 ***Citation***: Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
