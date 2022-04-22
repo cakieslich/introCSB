@@ -1,0 +1,12 @@
+name: sysBio3
+title: sysBio3
+username:
+account: kieslich
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 686470
+bundleId: 1854441
+url: https://kieslich.shinyapps.io/sysBio3/
+when: 1549263622.69137
+asMultiple: FALSE
+asStatic: FALSE
