@@ -1,0 +1,105 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+library(rootSolve)
+```
+## Stability of S-systems
+
+#### S-system model definition
+```{r}
+sMod <- function(t, state, parameters){
+  with(as.list(c(state, parameters)),{  
+    dx <- ax*x^gxx*y^gxy - bx*x^hxx*y^hxy
+    dy <- ay*x^gyx*y^gyy - by*x^hyx*y^hyy
+    list(c(dx, dy))
+  })
+}
+```
+
+#### S-system model parameters
+```{r}
+parameters <- c(ax  = 0.4,
+                bx  = 0.3,
+                gxx = 1.5,
+                gxy = 1.7,
+                hxx = 1.1,
+                hxy = 1.9,
+                ay = 0.7,
+                by = 0.5,
+                gyx = 1.3,
+                gyy = 1.1,
+                hyx = 1.1,
+                hyy = 1.9
+                )
+                
+
+```
+
+#### Definition of time and initial conditions
+```{r}
+time <- seq(0, 20, 0.01)
+state <- c(x = 2, #In this example the initial conditions are also used as an initial guess for the SS solver
+           y = 2)
+```
+
+#### Newton-Raphson method for root solving 
+The package *rootSolve* has utilities for identifiying steady-states of ODE models defined for the deSolve package. One standard approach for finding roots of systems of equations is the Newton-Raphson method which is used here in the *stode* function.
+
+```{r}
+nSS <- stode(y = state, fun = sMod, parms = parameters, positive = T)
+nSS$y
+```
+
+
+#### Linearization of nonlinear models. 
+To perform SS analysis of nonlinear systems, after identifying SS values, the next step is to linearize the system at the identified steady states before performing eigenvalue analysis. 
+
+```{r}
+A <- jacobian.full(nSS$y, sMod, parms = parameters)  #Approximation of Jacobian at SS
+eigenA <- eigen(A) #Computes eigenvalues and eigenvectors of matrix A
+round(A,digits = 2)
+```
+
+
+#### Numeric simulation to investigate stability of steady states
+```{r}
+out <- ode(y = nSS$y*1.1 + 1,#Initial condition is based on a small perturbation from the found SS
+           times = time, #Time definition
+           func = sMod, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+
+plot(out[,"time"],out[,"x"],col=4,lwd=2,type="l",xlab="Time",ylab="Values",ylim=range(c(out[,"x"],out[,"y"]))) #Plot x vs time
+lines(out[,"time"],out[,"y"],col=2,lwd=2) #Plot y vs time
+legend("topright",legend = c("x","y"),col = c(4,2),lwd = 2) #Define plot legend
+
+```
+
+#### Trace-determinant plot
+```{r}
+traceA <- sum(diag(A))
+detA <- det(A)
+desA <- traceA^2 - 4*det(A)
+
+mt <- abs(traceA)
+plot(seq(-3*mt,3*mt,0.01),seq(-3*mt,3*mt,0.01)^2/4,xlab="tr A",ylab="det A",
+     type="l",lwd=2,ylim=c(min(detA-10,0),max((3*mt)^2/4,detA+10)),cex.lab=1.25,cex.axis=1.25,axes=F)
+axis(1, pos=0)
+axis(2, pos=0)  
+points(traceA,detA,pch=19,col=2,cex=1.2)
+```
+
+#### Phase-plane plot
+```{r}
+plot(out[,"x"],out[,"y"],col=1,type="l",lwd=2,xlim=range(out[,"x"]),ylim=range(out[,"y"]),xlab="x",ylab = "y")
+
+```
+
+#### Stability analysis
+The above defined system has a trace of `r traceA` and a determinant of `r detA`. The eigenvalues of this system are `r round(eigenA$values[1],digits=2)` and `r round(eigenA$values[2],digits=2)`, and based on this information this steady state of this system is **`r ifelse(sum(Re(eigenA$values)<0)==2,"stable",ifelse(sum(Re(eigenA$values)<=0)==2,"marginally stable","unstable"))`** and the system **`r ifelse(sum(abs(Im(eigenA$values))>0)==2,"osscilates","does not osscilate")`**.

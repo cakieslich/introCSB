@@ -1,0 +1,66 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+```
+
+## Bistability and Hysteresis 
+
+Is the following system bistable and does it exhibit hysteresis? Provide plots/analysis and a short discusssion to back up your answer. 
+
+#### Model definition
+```{r}
+sysXY <- function(t, state, parameters) {
+  with(as.list(c(state, parameters)),{
+    dS <- 0 
+      
+    dX <- 200+800*(Y^4)/(16^4 + Y^4)-50*X^0.5 
+    dY <- 50*X^0.5*S - 100*Y 
+    list(c(dX, dY,dS))
+    
+    })
+  }
+
+```
+
+#### Model parameters
+```{r}
+parameters <- NULL #Needed as a place holder
+```
+
+#### Initial conditions
+```{r}
+state <- c(X = 1, 
+           Y = 1, 
+           S = 1
+          )
+```
+
+#### Model simulation
+```{r}
+
+times <- seq(from = 0,to = 100, by = 1) #Definition of time (initial,final,step size)
+
+eventdat <- data.frame(var = "S", 
+                       time = c(0,5,20,40,50), 
+                       value = c(3,10,3,2.5,3),
+                       method = "rep") 
+  
+out <- ode(y = state,#Initial conditions 
+           times = times, #Time definition
+           func = sysXY, #Name of function defining ODEs
+           parms = parameters,
+           events=list(data = eventdat)
+           )
+
+plot(out[,"time"],out[,"X"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,max(out[,-1])))
+lines(out[,"time"],out[,"Y"],col=2,lwd=2,type="l") 
+legend("topright",legend = c("X","Y"),col = c(3,2),lwd = 2) 
+
+```
+

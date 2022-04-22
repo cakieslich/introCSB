@@ -1,0 +1,101 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+```
+## Stability of Linear Systems
+
+#### Linear model definition
+```{r}
+linMod <- function(t, state, parameters){
+  with(as.list(c(state, parameters)),{  
+    dx <- dxx*x + dxy*y
+    dy <- dyx*x + dyy*y
+    list(c(dx, dy))
+  })
+}
+```
+
+#### Linear model parameters
+```{r}
+parameters <- c(dxx = 3,
+                dxy = -6,
+                dyx = 2,
+                dyy = 1
+                )
+                
+
+```
+
+#### Definition of time and initial conditions
+```{r}
+time <- seq(0, 10, 0.01)
+state <- c(x = 10,
+           y = 10)
+```
+
+#### Closed form solution of linear system of ODEs
+A close form solution of a linear system of ODEs can be obtained based on the eigenvalues and eigenvectors for the matrix representing the linear system. This is why eigenvalues can be used to describe the long term behavior of linear system and more importantly the stability of steady states. 
+```{r}
+A <- with(as.list(c(parameters)), rbind(c(dxx,dxy),c(dyx,dyy))) #Matrix representing linear system
+  
+
+eigenA <- eigen(A) #Computes eigenvalues and eigenvectors of matrix A
+  
+const <- solve(eigenA$vectors,state) #Compute integration constant
+
+x <- with(as.list(c(eigenA,parameters)), #defines the values of x over time based on ODEs
+          Re(vectors[1,1]*const[1]*exp(values[1]*time)+vectors[1,2]*const[2]*exp(values[2]*time))
+          )
+y <- with(as.list(c(eigenA,parameters)), #defines the values of y over time based on ODEs
+          Re(vectors[2,1]*const[1]*exp(values[1]*time)+vectors[2,2]*const[2]*exp(values[2]*time))
+          )
+
+plot(time,x,col=4,type="l",lwd=2,ylim=range(c(x,y)),ylab = "Values")
+lines(time,y,col=2,lwd = 2)
+legend("topright",legend = c("x","y"),col = c(4,2),lwd = 2) #Define plot legend
+```
+
+
+#### Numeric simulation of ODE
+Notice that the results from the closed form solution and the numeric simulation should be "the same".
+```{r}
+
+out <- ode(y = state,#Initial conditions 
+           times = time, #Time definition
+           func = linMod, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+
+plot(out[,"time"],out[,"x"],col=4,lwd=2,type="l",xlab="Time",ylab="Values",ylim=range(c(x,y))) #Plot x vs time
+lines(out[,"time"],out[,"y"],col=2,lwd=2) #Plot y vs time
+legend("topright",legend = c("x","y"),col = c(4,2),lwd = 2) #Define plot legend
+
+```
+
+#### Trace-determinant plot
+```{r}
+traceA <- sum(diag(A))
+detA <- det(A)
+desA <- traceA^2 - 4*det(A)
+
+mt <- abs(traceA)
+plot(seq(-3*mt,3*mt,0.01),seq(-3*mt,3*mt,0.01)^2/4,xlab="tr A",ylab="det A",
+     type="l",lwd=2,ylim=c(min(detA-10,0),max((3*mt)^2/4,detA+10)),cex.lab=1.25,cex.axis=1.25,axes=F)
+axis(1, pos=0)
+axis(2, pos=0)  
+points(traceA,detA,pch=19,col=2,cex=1.2)
+```
+
+#### Phase-plane plot
+```{r}
+plot(x,y,col=1,type="l",lwd=2,xlim=range(x),ylim=range(y),xlab="x",ylab = "y")
+```
+
+#### Stability analysis
+The above defined system has a trace of `r traceA` and a determinant of `r detA`. The eigenvalues of this system are `r round(eigenA$values[1],digits=2)` and `r round(eigenA$values[2],digits=2)`, and based on this information this steady state of this linear system is **`r ifelse(sum(Re(eigenA$values)<0)==2,"stable",ifelse(sum(Re(eigenA$values)<=0)==2,"marginally stable","unstable"))`** and the system **`r ifelse(sum(abs(Im(eigenA$values))>0)==2,"osscilates","does not osscilate")`**.

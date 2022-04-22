@@ -1,0 +1,190 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+library(GA)
+```
+## Parameter Estimation of ODE models
+
+#### SIR model diagram
+```{r echo=FALSE}
+DiagrammeR::grViz("digraph {
+
+# Initialize graph
+graph [layout = dot, rankdir = LR]
+
+# Define the nodes and global styles of the nodes. We can override these in box if we wish
+node [shape = circle, style = filled]
+
+#Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+S [fillcolor = green]
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+I [fillcolor = red]
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+R [fillcolor = blue]
+
+# edge definitions with the node IDs
+edge[fontsize = 10]
+# Edge weights are not necessary, but can be used to get edges in straight line (higher weight edges have more emphasis)
+
+S -> SI [label = 'rI', weight = 2, dir = none]
+SI -> I [weight = 2]
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+OS -> S [label = 'rBirth', weight = 2]
+I -> IO [label = 'rDeath', weight = 2]
+
+I -> R [label = 'rR', weight = 1]
+R -> S [label = 'rS', weight = 1]
+}")
+```
+
+#### SIR model definition
+```{r}
+SIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+
+```
+
+#### Cost function definition (Sum of squares)
+```{r}
+SSE <- function(parameters){
+  names(parameters) <- c("rBirth","rDeath","rI","rR","rS")
+  
+  options(warn = -1)
+  on.exit(options(warn = 0))
+  capture.output(
+    out <- ode(y = init, times = times, func = SIR, parms = parameters)
+  )
+  
+  fit <- out[out[,"time"]%in%dat[,"time"],-1]
+  sse <- sum((dat[,c("S","I","R")] - fit[,c("S","I","R")])^2)
+  
+  return(sse)
+}
+```
+
+#### SIR data
+```{r}
+dat <- data.frame(time=c(0,1,5,10,20,50,100),
+                  S=c(990,984,944,820,415,230,273),
+                  I=c(10,13,32,86,151,4,0.008),
+                  R=c(0,0.56,4.71,18,82,120,74)
+                  )
+
+init <- as.numeric(dat[1,-1])
+names(init) <- c("S","I","R")
+times <- seq(from = 0,to = 100, by = 0.1) #Definition of time (initial,final,step size)
+```
+
+#### Grid search
+```{r}
+nvals <- 4
+
+parGS <- NULL
+for(i in seq(0,0.2,length.out = nvals)){
+  for(j in seq(0,0.2,length.out = nvals)){
+    for(k in seq(0,0.001,length.out = nvals)){
+      for(m in seq(0,0.1,length.out = nvals)){
+        for(n in seq(0,0.1,length.out =nvals)){
+          par <- c(i,j,k,m,n)
+          names(par) <- c("rBirth","rDeath","rI","rR","rS")
+          
+          sse <- SSE(par)
+          parGS <- rbind(parGS,cbind(sse,data.frame(t(par))))
+        }
+      }
+    }
+  }
+}
+
+bestPar <- as.numeric(parGS[which.min(parGS$sse),-1])
+names(bestPar) <- c("rBirth","rDeath","rI","rR","rS")
+
+out <- ode(y = init,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms =  bestPar #Parameter values
+           )
+
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+points(dat[,"time"],dat[,"S"],pch=19,col=3)
+points(dat[,"time"],dat[,"I"],pch=19,col=2)
+points(dat[,"time"],dat[,"R"],pch=19,col=4)
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+text(20,950,sprintf("SSE: %.1f",min(parGS$sse)),cex=1,pos=4)
+
+```
+
+#### Gradient search (box constrained)
+```{r}
+
+optLBFGS <- optim(bestPar,SSE,method = "L-BFGS-B",
+                              lower = rep(0,length(bestPar)),
+                              upper = c(5,0.5,0.001,0.5,0.5),
+                              control=list(maxit=1000)
+                              )
+
+out <- ode(y = init,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms =  optLBFGS$par #Parameter values
+           )
+
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+points(dat[,"time"],dat[,"S"],pch=19,col=3)
+points(dat[,"time"],dat[,"I"],pch=19,col=2)
+points(dat[,"time"],dat[,"R"],pch=19,col=4)
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+text(20,950,sprintf("SSE: %.1f",optLBFGS$value),cex=1,pos=4)
+```
+
+#### Genetic algorithm
+```{r}
+GA <- ga(type = "real-valued",
+         fitness = function(par) -SSE(par),
+         lower = rep(0,length(bestPar)), 
+         upper = c(0.2,0.2,0.001,0.1,0.1),
+         names = c("rBirth","rDeath","rI","rR","rS"),
+         popSize = 25, 
+         maxiter = 1000, 
+         run = 200,
+         optim = TRUE,
+         optimArgs = list(pressel = 0.8,control = list(maxit = c(10,100)))
+         )
+
+bestGA <- as.vector(GA@solution)
+names(bestGA) <- c("rBirth","rDeath","rI","rR","rS")
+
+out <- ode(y = init,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms =  bestGA #Parameter values
+           )
+
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+points(dat[,"time"],dat[,"S"],pch=19,col=3)
+points(dat[,"time"],dat[,"I"],pch=19,col=2)
+points(dat[,"time"],dat[,"R"],pch=19,col=4)
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+text(20,950,sprintf("SSE: %.1f",abs(GA@fitnessValue)),cex=1,pos=4)
+```

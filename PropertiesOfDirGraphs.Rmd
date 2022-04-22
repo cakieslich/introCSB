@@ -1,0 +1,92 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(DiagrammeR)
+```
+## Properties of Directed Graphs
+A graph is a concise data structure for representing relationships in the form of networks. Graphs consist of nodes, the objects of the network, and edges, the relationships. Below you will find an example of how to define a graph based on an adjacency matrix, and how to compute properties of the graph. 
+
+#### Generate and visualize a graph from an adjacency matrix
+```{r}
+#c combines numbers/characters into a vector 
+#rbind builds matrices by combining vectors row-wise
+adj <- rbind(c(0,1,1,1,1,0),
+             c(0,0,1,0,1,1),
+             c(1,0,0,1,0,0),
+             c(0,0,0,0,1,1),
+             c(0,1,1,0,0,1),
+             c(1,0,1,1,0,0)
+             )
+
+graph <- from_adj_matrix( #function from  DiagrammeR for building graph from an adjacency matrix 
+            adj,
+            mode = "directed"
+        )
+render_graph(graph) #function from  DiagrammeR visualizing a graph
+```
+
+#### In Degree
+```{r}
+apply(adj,2,sum) #Counts number of edges (1's) across each columns of the adjacency matrix
+```
+
+#### Out Degree
+```{r}
+apply(adj,1,sum) #Counts number of edges (1's) across each row of the adjacency matrix
+```
+
+#### Clustering Coefficients of the Nodes
+```{r}
+#For an undirected graph # of neighbors is the same as node degree
+nNeigh <- rep(0,nrow(adj)) #Initializes variable for storing the number of neighbors
+for(i in 1:nrow(adj)){#Loops over nodes 
+  nNeigh[i] <- sum(adj[i,]==1|adj[,i]==1) #For each node counts the number of nodes that shares an edge
+} 
+
+cc <- rep(0,nrow(adj)) #Initializes variable for storing the clustering coef
+for(i in 1:nrow(adj)){#Loops over nodes 
+  if(nNeigh[i]>1){ # If the node has more than one neighbor calculate clustering coef
+    neigh <- which(adj[i,]==1|adj[,i]==1) #Identifies which nodes share an edge with the current node
+    nMat <- adj[neigh,neigh] #Generates an adjacency matrix (subgraph) describing the edges between the neighbors
+  
+    cc[i] <- sum(nMat)/(nNeigh[i]*(nNeigh[i]-1)) # Computes clustering coef for current node  
+  } else{#Otherwise assign zero as the value
+    cc[i] <- 0
+  }
+}
+
+round(cc,digits = 2) #Round clust coef to 2 significant digits
+```
+
+#### Clustering Coefficients of the Graph
+```{r}
+round(mean(cc),digits = 2)  #Averages the clustering coeficients for the nodes
+```
+
+
+#### Shortest Distance between Nodes
+```{r}
+sd <- matrix(0,nrow = nrow(adj),ncol = ncol((adj))) #Initializes variable for shortest distance
+adjPow <- adj #Initalizes matrix for adjacency matrix raised to a power
+    
+for(pow in 1:nrow(adj)){  #Loops over possible powers/lengths
+  #Checks if the shortest distance has been identified and if atleast one path of the current length exists between nodes. If so, the current length/lower is store in the shortest distance matrix.
+  sd[adjPow!=0 & sd==0] <- pow 
+  adjPow <- adjPow%*%adj #Increase the power adj matrix with matraix multiplication with the adj matrix
+}
+
+#Any node combination that still has a shortest distance of 0 doesn't have a path and therefore has an infinite distance. 
+sd[(lower.tri(sd)|upper.tri(sd)) & sd==0] <- Inf 
+
+sd
+```
+
+#### Diameter of the Graph
+```{r}
+max(sd) #The diameter is the max of the shortest distances
+```

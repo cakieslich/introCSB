@@ -1,0 +1,139 @@
+---
+title: ""
+output: html_document
+params:
+  input: NA
+  output: NA
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+library(shiny)
+library(DiagrammeR)
+
+knitr::opts_chunk$set(echo = TRUE)
+```
+## Simplified MAPK Cascade Model
+The following report summarizes simulation results from the simplified MAPK cascade model performed on *`r date()`*.
+
+### Model Diagram
+```{r echo=F}
+grViz("digraph {
+
+                      # Initialize graph
+                      graph [layout = dot, rankdir = LR]
+                      
+                      # Define the nodes and global styles of the nodes. We can override these in box if we wish
+                      node [shape = circle, style = filled, fixedsize = true,fontcolor=white]
+                      
+                      #Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+                      
+                      S [fillcolor = dimgray]
+
+                      E [fillcolor = blue]
+                      X [fillcolor = blue]
+                      fEX [style=invis, shape=point, width=0] #Dummy node
+                      rEX [style=invis, shape=point, width=0] #Dummy node
+                      XE [fillcolor = blue]
+                      iXP [style=invis, shape=point, width=0] #Dummy node
+                      XP [fillcolor = blue]
+                      
+                      Y [fillcolor = red]
+                      fYXP [style=invis, shape=point, width=0] #Dummy node
+                      rYXP [style=invis, shape=point, width=0] #Dummy node
+                      YXP [fillcolor = red]
+                      iYP [style=invis, shape=point, width=0] #Dummy node
+                      YP [fillcolor = red]
+
+                      Z [fillcolor = ForestGreen]
+                      fZYP [style=invis, shape=point, width=0] #Dummy node
+                      rZYP [style=invis, shape=point, width=0] #Dummy node
+                      ZYP [fillcolor = ForestGreen]
+                      iZP [style=invis, shape=point, width=0] #Dummy node
+                      ZP [fillcolor = ForestGreen]
+          
+
+                      # edge definitions with the node IDs
+                      edge[fontsize = 10]
+                      # Edge weights are not necessary, but can be used to get edges in straight line 
+                      # (higher weight edges have more emphasis)
+                      
+                      ranksep=0.2;
+                      
+                      S -> fEX [label = '+', tailport = n, style = dashed, 
+                                fontcolor = green, color = green,weight=0]
+
+                      E -> fEX [dir = none, weight=1]
+                      X -> fEX [dir = none, weight=2]
+                      fEX -> XE [label = 'k@_{on}', weight=2]
+                      rEX -> X [weight = 2]
+                      rEX -> E [weight = 1]
+                      XE -> rEX [weight = 2, dir = none, label = 'k@_{off}']
+                      XE -> iXP [label = 'k@_{cat}', weight = 2, dir = none]
+                      iXP -> XP [weight = 2]
+                      iXP -> E [weight = 1]
+                      XP -> X [label = 'k@_{dp}',weight = 1]
+                      
+                      XP -> fYXP [dir = none, weight=1]
+                      Y -> fYXP [dir = none, weight=2]
+                      fYXP -> YXP [label = 'k@_{on}', weight=2]
+                      rYXP -> Y [weight = 2]
+                      rYXP -> XP [weight = 1]
+                      YXP -> rYXP [weight = 2, dir = none, label = 'k@_{off}']
+                      YXP -> iYP [label = 'k@_{cat}', weight = 2, dir = none]
+                      iYP -> YP [weight = 2]
+                      iYP -> XP [weight = 1]
+                      YP -> Y [label = 'k@_{dp}',weight = 1]
+
+                      YP -> fZYP [dir = none, weight=1]
+                      Z -> fZYP [dir = none, weight=2]
+                      fZYP -> ZYP [label = 'k@_{on}', weight=2]
+                      rZYP -> Z [weight = 2]
+                      rZYP -> YP [weight = 1]
+                      ZYP -> rZYP [weight = 2, dir = none, label = 'k@_{off}']
+                      ZYP -> iZP [label = 'k@_{cat}', weight = 2, dir = none]
+                      iZP -> ZP [weight = 2]
+                      iZP -> YP [weight = 1]
+                      ZP -> Z [label = 'k@_{dp}',weight = 1]
+                  }")
+```
+
+### Model Parameters
+The following tables include the values of the model inputs that were used to generate the results
+summarized by this report.
+
+```{r echo=FALSE}
+pTab <- data.frame(Concentration=c(params$input$kon,params$input$koff,params$input$kcat,params$input$kdp))
+colnames(pTab) <- c("Value")
+rownames(pTab) <- c("Association rate (kon)","Dissociation rate (koff)","Catalytic rate (kcat)","Dephosphorylation rate (kdp)")
+kable(pTab,caption = "MAPK Enzyme Kinetics Parameters")
+```
+
+```{r echo=FALSE}
+sTab <- data.frame(Value=c(params$input$A,params$input$freq,params$input$startS,params$input$endS))
+colnames(sTab) <- c("Value")
+rownames(sTab) <- c("Signal amplitude (A)","Signal frequence (freq)",
+                    "Signal start time (startS)","Signal end time (endS)")
+kable(sTab,caption = "MAPK Signal Parameters")
+```
+
+### Plots Summarizing the Simulation
+&nbsp;
+
+```{r echo=FALSE}
+out <- params$output # Call reactive function to get updated simulation 
+    
+# Plots results of simulation and is ran everytime the input is updated
+par(mar=c(4,4,1,1))
+plot(out[,1],out[,5],ylim=c(0,ceiling(max(out[,c(5,8,11)]))),xlab="Time",ylab="Population",col=4,lwd=2,type="l",cex.lab=1.3,cex.axis=1.3)
+lines(out[,1],out[,8],xlab="Time",ylab="",col=2,lwd=2,type="l")
+lines(out[,1],out[,11],xlab="Time",ylab="",col=3,lwd=2,type="l")
+legend("topright",c("XP","YP","ZP"),lwd = 2, col=c(4,2,3))
+```
+&nbsp;
+&nbsp;
+
+**Figure 1.** *Time course simulation of MAPK cascade activation.*  
+&nbsp;
+&nbsp;
+

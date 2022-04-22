@@ -1,0 +1,100 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+library(phaseR)
+```
+## Models of Interacting Populations: Nullclines and Vector Fields
+
+#### Model definition
+```{r}
+intPop <- function(t, state, parameters) {
+  names(state) <- c("N1","N2")
+  with(as.list(c(state, parameters)),{  
+      dN1 <- r1*N1*(K1-N1+a*N2)/K1 # Population 1
+      dN2 <- r2*N2*(K2-N2+b*N1)/K2 # Population 2
+      list(c(dN1, dN2))
+    })
+  }
+
+```
+
+#### Model parameters
+```{r}
+parameters <- c(r1 = 1,  # Growth rate for population 1
+                K1 = 13, # Carrying capacity for population 1
+                a = -2.2,# Interaction parameter for population 1 
+                r2 = 1,  # Growth rate for population 2
+                K2 = 57, # Carrying capacity for population 2
+                b = -2.9   # Interaction parameter for population 2
+                )
+```
+
+#### Nullclines
+```{r}
+par(lwd=2)
+
+ff <- flowField(intPop, # Function defining ODE model
+                xlim = c(0,50), # Range of X variable
+                ylim = c(0,50), # Range of Y variable
+                parameters = parameters, # Model parameters
+                add=F) # Needed when the the first thing being plotted 
+
+nc <- nullclines(intPop, # Function defining ODE model
+                 xlim = c(0,50), # Range of X variable
+                 ylim = c(0,50), # Range of Y variable
+                 parameters = parameters, # Model parameters
+                 points = 500, # Number of points used to define nullclines
+                 add.legend=T)
+
+```
+
+#### Trajectories
+```{r}
+par(lwd=2)
+y0 <- cbind(sample(0:50,20),sample(0:50,20))
+
+ff <- flowField(intPop, # Function defining ODE model
+                xlim = c(0,50), # Range of X variable
+                ylim = c(0,50), # Range of Y variable
+                parameters = parameters, # Model parameters
+                add=F) # Needed when the the first thing being plotted 
+
+trj <- trajectory(intPop, 
+                  y0 = y0, # Matrix of initial conditions for trajectories
+                  tlim = c(0,30), # Time limit for each trajectory
+                  parameters = parameters, # Model parameters 
+                  col = rep("red", 20)) # Color of lines showing trajectories
+```
+
+#### Combination
+```{r}
+par(lwd=2)
+
+ff <- flowField(intPop, # Function defining ODE model
+                xlim = c(0,50), # Range of X variable
+                ylim = c(0,50), # Range of Y variable
+                parameters = parameters, # Model parameters
+                add=F) # Needed when the the first thing being plotted 
+
+trj <- trajectory(intPop, 
+                  y0 = y0, # Matrix of initial conditions for trajectories
+                  tlim = c(0,30), # Time limit for each trajectory
+                  parameters = parameters, # Model parameters 
+                  col = rep("red", 20)) # Color of lines showing trajectories
+
+
+nc <- nullclines(intPop, # Function defining ODE model
+                 xlim = c(0,50), # Range of X variable
+                 ylim = c(0,50), # Range of Y variable
+                 parameters = parameters, # Model parameters
+                 points = 500, # Number of points used to define nullclines
+                 add.legend=T)
+
+```
+

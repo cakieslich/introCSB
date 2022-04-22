@@ -1,0 +1,195 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+```
+## Intro to Systems Biology Modeling: SIR models
+SIR models are simple epidemiological compartment models that predict the spread of an infectious disease. In addition to an infected population (I), the model also includes a recovered (R), or at least temporarily immune, population, as well as, a susceptible population (S) of people who can catch the disease from an infected individual. These simple models can be powerful in exploring the effects of the various aspects (rates) of the spread of an infection on the size of the infected population.
+
+#### SIR model diagram
+```{r}
+DiagrammeR::grViz("digraph {
+
+# Initialize graph
+graph [layout = dot, rankdir = LR]
+
+# Define the nodes and global styles of the nodes. We can override these in box if we wish
+node [shape = circle, style = filled]
+
+#Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+S [fillcolor = green]
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+I [fillcolor = red]
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+R [fillcolor = blue]
+
+# edge definitions with the node IDs
+edge[fontsize = 10]
+# Edge weights are not necessary, but can be used to get edges in straight line (higher weight edges have more emphasis)
+
+S -> SI [label = 'rI', weight = 2, dir = none]
+SI -> I [weight = 2]
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+OS -> S [label = 'rBirth', weight = 2]
+I -> IO [label = 'rDeath', weight = 2]
+
+I -> R [label = 'rR', weight = 1]
+R -> S [label = 'rS', weight = 1]
+}")
+```
+
+#### SIR model definition
+```{r}
+SIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+
+```
+
+#### SIR model parameters
+```{r}
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.0005, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+```
+
+#### SIR initial conditions
+```{r}
+state <- c(S = 1000, #Initial number of susceptible individuals  
+           I = 10, #Initial number of infected individuals
+           R = 0 #Initial number of recovered individuals
+          )
+```
+
+#### SIR model simulation
+```{r}
+
+times <- seq(from = 0,to = 100, by = 1) #Definition of time (initial,final,step size)
+
+#ode is like ode45 in Matlab and is used to simulate systems of ODEs
+out <- ode(y = state,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+```
+
+#### Plot simulation results
+```{r}
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+
+```
+
+### Modified SIR models: Adding quarantine
+Beyond the standard SIR model, modifications can be to test scenarios for combating infections. For instance, can you eradicate the disease using quarantine? Or perhaps, what is the effect of the initial number of infected individuals on the effectiveness of quarantine?
+
+#### SIRQ model diagram
+```{r}
+DiagrammeR::grViz("digraph {
+
+graph [layout = dot, rankdir = LR]
+
+# define the global styles of the nodes. We can override these in box if we wish
+node [shape = circle, style = filled]
+
+#Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+S [fillcolor = green]
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+I [fillcolor = red]
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+R [fillcolor = blue]
+Q [fillcolor = white]
+
+# edge definitions with the node IDs
+edge[fontsize = 10]
+# Edge weights are not necessary, but can be used to get edges in straight line (higher weight edges have more emphasis)
+
+S -> SI [label = 'rI', weight = 2, dir = none]
+SI -> I [weight = 2]
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+OS -> S [label = 'rBirth', weight = 2]
+I -> IO [label = 'rDeath', weight = 2]
+
+I -> R [label = 'rR', weight = 1]
+R -> S [label = 'rS', weight = 1]
+I -> Q [label = 'rQ', weight = 1]
+Q -> R [label = 'rRI', weight = 1]
+}")
+```
+
+#### SIRQ model definition
+```{r}
+SIRQ <- function(t, state, parameters) {
+    with(as.list(c(state, parameters)), {
+      dS <- rBirth + rS*R - rI*S*I + rRI*Q
+      dI <- rI*S*I - rR*I - rDeath*I - rQ*I
+      dR <- rR*I - rS*R
+      dQ <- rQ*I - rRI*Q
+      list(c(dS, dI, dR, dQ))
+    })
+}
+```
+
+#### SIRQ model parameters
+```{r}
+parameters <- c(rBirth = 3, 
+                rDeath = 0.02,
+                rI = 0.0005, 
+                rR = 0.05, 
+                rS = 0.01,
+                rQ = 0.1, 
+                rRI = 0.01
+                )
+```
+
+#### SIRQ initial conditions
+```{r}
+state <- c(S = 1000,  
+           I = 10, 
+           R = 0,
+           Q = 0
+          )
+```
+
+#### SIRQ model simulation
+```{r}
+times <- seq(from = 0,to = 100, by = 1)
+
+out <- ode(y = state, 
+           times = times, 
+           func = SIRQ, 
+           parms = parameters
+           )
+```
+
+#### Plot simulation results
+```{r}
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000))
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l")
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l")
+lines(out[,"time"],out[,"Q"],col=1,lwd=2,type="l")
+legend("topright",legend = c("S","I","R","Q"),col = c(3,2,4,1),lwd = 2)
+
+```
+

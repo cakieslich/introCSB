@@ -1,0 +1,108 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+```
+## Discrete,recursive models: Revisiting SIR models
+As we saw previously, SIR models are simple epidemiological compartment models that predict the spread of an infectious disease. In this example, we will use the SIR model as a way of demonstrating how to setup and simulate discrete recursive models.
+
+#### SIR model diagram
+The diagram for our model is identical to the standard SIR model that we saw previously:
+```{r}
+DiagrammeR::grViz("digraph {
+
+# Initialize graph
+graph [layout = dot, rankdir = LR]
+
+# Define the nodes and global styles of the nodes. We can override these in box if we wish
+node [shape = circle, style = filled]
+
+#Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+S [fillcolor = green]
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+I [fillcolor = red]
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+R [fillcolor = blue]
+
+# edge definitions with the node IDs
+edge[fontsize = 10]
+# Edge weights are not necessary, but can be used to get edges in straight line (higher weight edges have more emphasis)
+
+S -> SI [label = 'rI', weight = 2, dir = none]
+SI -> I [weight = 2]
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+OS -> S [label = 'rBirth', weight = 2]
+I -> IO [label = 'rDeath', weight = 2]
+
+I -> R [label = 'rR', weight = 1]
+R -> S [label = 'rS', weight = 1]
+}")
+```
+
+#### SIR discrete model definition
+Below is a function defining the discrete, recursive model, which should look similar to the function used to define the ODE SIR model. The lines defining the change in the populations are identical to those in the ODE function, but here the function is returning the new values of the populations, since it is adding the current population sizes (S,I,R) to the current change in the populations (dS,dI,dR). 
+```{r}
+SIR <- function(state, parameters) {# SIR is the name of this function with state and parameters 
+  # with function executes lines in {} (recursive equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+    dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+    dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+    dR <- rR*I - rS*R #ODE for recovered population
+      
+    data.frame(S=S+dS,I=I+dI,R=R+dR) #Return new value of variables
+  })
+}
+
+```
+
+#### SIR model parameters
+Same as in the ODE example.
+```{r}
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.0005, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+```
+
+#### SIR initial conditions
+Similar to the ODE example, but here we are using the data.frame() function instead of c(). This will serve as the first row of a table showing the populations sizes over time. 
+```{r}
+state <- data.frame(S = 1000, #Initial number of susceptible individuals  
+                    I = 10, #Initial number of infected individuals
+                    R = 0 #Initial number of recovered individuals
+          )
+```
+
+#### SIR discrete model simulation
+For the discrete simulation we do not need a special function or algorithm. We simply use a for loop to perform the desired number of iterations by using the previous state (population sizes) as the input into our SIR function. 
+```{r}
+dt <- 0.1 #Define time step
+times <- seq(from = 0,to = 100, by = dt) #Definition of time (initial,final,step size)
+
+for(i in 2:length(times)){
+  state <- rbind(state,# Add new values as a row to existing table 
+                 SIR(state[i-1,], #Use previous row (i-1) as input into function
+                     dt*parameters) #We scale parameter values by the time step
+                 )
+}
+state <- cbind(time=times,state)
+```
+
+#### Plot simulation results
+Basically the same as in the ODE example, but we are using the "type='b'" (b=both) argument to show both the line and discrete points. 
+```{r}
+plot(state[,"time"],state[,"S"],col=3,lwd=2,pch=16,type="b",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(state[,"time"],state[,"I"],col=2,lwd=2,pch=16,type="b") #Plot I population vs time
+lines(state[,"time"],state[,"R"],col=4,lwd=2,pch=16,type="b") #Plot R population vs time
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+
+```
+

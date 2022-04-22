@@ -1,0 +1,168 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(deSolve)
+```
+## Linearization of non-linear models: SIR models
+As we saw previously, SIR models are simple epidemiological compartment models that predict the spread of an infectious disease. In this example, we will use the SIR model as a way of demonstrating how to linearize a non-linear model.
+
+#### SIR model diagram
+```{r}
+DiagrammeR::grViz("digraph {
+
+# Initialize graph
+graph [layout = dot, rankdir = LR]
+
+# Define the nodes and global styles of the nodes. We can override these in box if we wish
+node [shape = circle, style = filled]
+
+#Edges in graphs must be between nodes, therefore dummy nodes are needed for signaling edges and input/output edges
+
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+S [fillcolor = green]
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+I [fillcolor = red]
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+R [fillcolor = blue]
+
+# edge definitions with the node IDs
+edge[fontsize = 10]
+# Edge weights are not necessary, but can be used to get edges in straight line (higher weight edges have more emphasis)
+
+S -> SI [label = 'rI', weight = 2, dir = none]
+SI -> I [weight = 2]
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+OS -> S [label = 'rBirth', weight = 2]
+I -> IO [label = 'rDeath', weight = 2]
+
+I -> R [label = 'rR', weight = 1]
+R -> S [label = 'rS', weight = 1]
+}")
+```
+
+#### SIR model definition
+```{r}
+SIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+
+```
+
+#### SIR model parameters
+```{r}
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.05, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+```
+
+#### SIR initial conditions
+Initial conditions in this example are based on slighty perturbing the system from a steady state.
+```{r}
+ss <- c(S=140,I=150,R=750) # Steady state values of S,I, and R
+perturb <- c(dS=30,dI=-30,dR=-50) # Perturbation from SS
+state <- with(as.list(c(ss, perturb)),{
+            c(S = S + dS, #Initial number of susceptible individuals  
+              I = I + dI, #Initial number of infected individuals
+              R = R + dR  #Initial number of recovered individuals
+            )
+})
+```
+
+#### SIR model simulation
+```{r}
+
+times <- seq(from = 0,to = 300, by = 1) #Definition of time (initial,final,step size)
+
+#ode is like ode45 in Matlab and is used to simulate systems of ODEs
+out <- ode(y = state,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+```
+
+#### Plot simulation results
+```{r}
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,800)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+
+```
+
+#### Linearized SIR model definition
+To generate the linearized SIR model we simply take the partial derivative of each equation, and evaluate the resulting expression at operating point (steady state). *Note: Not all equations will need to be dependent on all variables.*
+```{r}
+lSIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rSR*R + rSS*S + rSI*I #Linearized ODE for susceptible population
+      dI <- rII*I +rIS*S #Linearized ODE for infected population
+      dR <- rRI*I + rRR*R #Linearized ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+
+```
+
+#### Linearized SIR model parameters
+```{r}
+Lparameters <- with(as.list(c(ss, parameters)),{ #Parameters for the linearized model are dependent on the 
+                                                 # parameter values of the nonlinear model and the SS
+                        c(rSS = -rI*I, 
+                          rSI = -rI*S, 
+                          rSR = rS,
+                          rIS = rI*I, 
+                          rII = rI*S-rR-rDeath,
+                          rRI = rR,
+                          rRR = -rS
+                          )
+})
+```
+
+#### Linearized SIR initial conditions
+The linearized model is capturing the perturbation from a steady state, therefore, the initial conditions for the linearized model is just the perturbations. *Note: In the linearized model (0,0,0) is a SS.*
+```{r}
+Lstate <- with(as.list(c(perturb)),{
+            c(S = dS, #Initial number of susceptible individuals  
+              I = dI, #Initial number of infected individuals
+              R = dR  #Initial number of recovered individuals
+            )
+})
+```
+
+#### SIR model simulation
+```{r}
+times <- seq(from = 0,to = 300, by = 1) #Definition of time (initial,final,step size)
+
+#ode is like ode45 in Matlab and is used to simulate systems of ODEs
+Lout <- ode(y = Lstate,#Initial conditions 
+           times = times, #Time definition
+           func = lSIR, #Name of function defining ODEs
+           parms = Lparameters #Parameter values
+           )
+```
+
+#### Plot simulation results
+To transform the linearized model back to the original space the SS values are added to the variable values.
+```{r}
+plot(Lout[,"time"],Lout[,"S"]+ss["S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,800)) #Plot S population vs time
+lines(Lout[,"time"],Lout[,"I"]+ss["I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(Lout[,"time"],Lout[,"R"]+ss["R"],col=4,lwd=2,type="l") #Plot R population vs time
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+
+```

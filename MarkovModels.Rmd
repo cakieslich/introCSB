@@ -1,0 +1,57 @@
+---
+title: "  "
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T)
+
+library(DiagrammeR)
+```
+## Markov Chain Models
+Markov models describe a system that can assume m different states. At each (discrete) time point, the system is in exactly one of these states. In discrete time steps, the system transitions with some probability into a 	different state or stays where it is. 
+
+Example: Pinball machine with flippers, bumpers, kickers, slingshots, …
+
+#### Define Markov Model transition probabilities
+```{r}
+
+#c combines numbers/characters into a vector 
+#rbind builds matrices by combining vectors row-wise
+MM <- rbind(c(0.79,0.19,0.02), #Probability of being in state 1 and moving to state 1,2,3
+             c(0.19,0.54,0.27), #Probability of being in state 2 and moving to state 1,2,3
+             c(0.51,0.43,0.06) #Probability of being in state 3 and moving to state 1,2,3
+             )
+MM <- as.matrix(MM) #Make MM have matrix object type
+rownames(MM) <- 1:nrow(MM) #Add row names
+colnames(MM) <- 1:nrow(MM) #Add col names
+
+graph <- # Visualize system with edge weights indicating probability of transition
+  create_graph() %>%
+  add_full_graph(n = nrow(MM), 
+                 keep_loops = TRUE,
+                 type = "weighted",
+                 edge_wt_matrix = t(MM)
+) %>%
+  copy_edge_attrs(
+    edge_attr_from = weight,
+    edge_attr_to = label
+    )
+
+render_graph(graph) #function from  DiagrammeR visualizing a graph
+```
+
+#### Markov Matrix analysis
+```{r}
+iPos <- 1 # Initial position
+nTrans <- 1 # Number of transitions
+
+ps <- ((1:nrow(MM))==iPos)+0 #Initialize probability distribution
+ps <- t(t(ps)) #Make initial prob a column vector
+
+for(i in 1:nTrans){
+  ps <- t(MM)%*%ps # Update probability distribution for each step/transition
+}
+
+ps
+```
