@@ -24,12 +24,12 @@ lvMod <- function(t, state, parameters){
 
 #### LV model parameters
 ```{r}
-parameters <- c(pxx = 4,
-                pxy = -1,
-                px  = 1,
-                pyx = 0,
-                pyy = -4,
-                py = 0
+parameters <- c(pxx = 0.02,
+                pxy = -0.23,
+                px  = 0.84,
+                pyx = 1.06,
+                pyy = -0.04,
+                py = -0.82
                 )
                 
 
@@ -37,7 +37,7 @@ parameters <- c(pxx = 4,
 
 #### Definition of time and initial conditions
 ```{r}
-time <- seq(0, 20, 0.01)
+time <- seq(0, 100, 0.1)
 state <- c(x = -1, #In this example the initial conditions are also used as an initial guess for the SS solver
            y = 1)
 ```
