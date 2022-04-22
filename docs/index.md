@@ -9,7 +9,7 @@ This is a series of modules that are intended to provide simple interfaces to ex
 4. [Canonical Models](https://kieslich.shinyapps.io/sysBio4/): Provides interfaces to example models based on the canonical models described in pg. 102-105 of Chapter 4: The Mathematics of Biological Systems of A First Course in Systems Biology. The expected outcomes of this module are to learn the basic structure of (i) linear, (ii) Lotka-Voltera, (iii) mass action, and (iv) S-system models.
 5. [Analysis of Dynamic Models](https://kieslich.shinyapps.io/sysBio5/): Provides interfaces to example models described in Chapter 4: The Mathematics of Biological Systems of A First Course in Systems Biology. The expected outcomes of this module are to learn the fundamentals of stability analysis including: (i) linearization of nonlinear models, (ii) eigenvalue analysis.
 
-### R Markdown Resources
+### R Coding Examples by Topic
 1. [Intro to Modeling](https://cakieslich.github.io/introCSB/IntroToModelling.html) 
 2. [Properties of Undirected Graphs](https://cakieslich.github.io/introCSB/PropertiesOfUndirGraphs.html) 
 3. [Properties of Directed Graphs](https://cakieslich.github.io/introCSB/PropertiesOfDirGraphs.html) 
@@ -25,14 +25,3 @@ This is a series of modules that are intended to provide simple interfaces to ex
 
 Citation
 Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
-
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/cakieslich/introCSB/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
