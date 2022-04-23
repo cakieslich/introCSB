@@ -1,4 +1,4 @@
-## R resources for learning Comptutational Systems Biology
+## R Resources for Learning Comptutational Systems Biology
 On this page you will find a variety of resources for teaching/learning Computational Systems Biology that have been developed using the R statistical language. These resources include interactive modules that are generally applicable to learning the basics of systems biology modeling, as well as, coding examples for using R to develop and analyze various types of systems biology models. The coding examples also include R shiny examples, which provide a template for developing interactive interfaces for systems biology models. Source codes for all interfaces and coding examples are also available.
 
 ### R Shiny Interactive Modules 
@@ -26,7 +26,8 @@ Below is a list of links to HTML pages with coding examples for a range of topic
 11. [Nullcline Analysis](https://cakieslich.github.io/introCSB/nullclines.html) 
 12. [Analyzing Hysteresis](https://cakieslich.github.io/introCSB/hysteresis.html)   
 
-### R shiny examples
+### R *shiny* Examples
+*shiny* is an R package that enables the efficient development of web-based applications. The following examples demonstrate how R shiny can be used for developing interactive interfaces for systems biology models.
 
 1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R): Simple example of how to use R shiny to develop interactive interfaces for ODE-based models. ([Demo](https://kieslich.shinyapps.io/fishing/))
 2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk): Advanced example of how to use R shiny to develop interactive interfaces for ODE-based models. Includes the ability to export analysis from the model using an R markdown derived report in PDF format. ([Demo](https://kieslich.shinyapps.io/mapk/))
