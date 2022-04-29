@@ -20,7 +20,7 @@ Below is a list of links to HTML pages with coding examples for a range of topic
 5. [Markov Models](https://cakieslich.github.io/introCSB/MarkovModels.html) 
 6. [Parameter Estimation](https://cakieslich.github.io/introCSB/ParameterEstimation.html) 
 7. [Stability of Linear Models](https://cakieslich.github.io/introCSB/StabilityLinearModels.html) 
-8. [Linear Approximation of Nonlinear Models](https://cakieslich.github.io/introCSB/LinearApproximation.html) 
+8. [Approximation of Nonlinear Models](https://cakieslich.github.io/introCSB/LinearApproximation.html) 
 9. [Stability of Lotka-Volterra Models](https://cakieslich.github.io/introCSB/StabilityNonLinearModels.html) 
 10. [Stability of S-system Models](https://cakieslich.github.io/introCSB/StabilitySsystemModels.html) 
 11. [Nullcline Analysis](https://cakieslich.github.io/introCSB/nullclines.html) 
