@@ -1,5 +1,5 @@
 ## R Resources for Learning Comptutational Systems Biology
-On this page you will find a variety of resources for teaching/learning Computational Systems Biology that have been developed using the R statistical language. These resources include interactive modules that are generally applicable to learning the basics of systems biology modeling, as well as, coding examples for using R to develop and analyze various types of systems biology models. The coding examples also include R *shiny* examples, which provide a template for developing interactive interfaces for systems biology models. Source codes for all interfaces and coding examples are also available.
+On this page you will find a variety of resources for teaching/learning Computational Systems Biology that have been developed using the R statistical language. These resources include interactive modules that are generally applicable to learning the basics of systems biology modeling, as well as, coding examples for using R to develop and analyze various types of systems biology models. The coding examples also include R *shiny* examples, which provide a template for developing interactive interfaces for systems biology models. Source codes for all interfaces and coding examples are also available. An interactive slide deck, also developed with R *shiny*, that was presented at FOSBE 2022 in a session on Systems Biology Eucation are available [here](https://kieslich.shinyapps.io/fosbe2022/).
 
 ### R Shiny Interactive Modules 
 This is a series of modules that are intended to provide simple interfaces to example systems models and to provide extra practice problems and are intended as a supplement the textbook: A First Course in Systems Biology . The textbook is not needed to be able to use these applications, but may be useful for further explanation.
@@ -32,5 +32,13 @@ Below is a list of links to HTML pages with coding examples for a range of topic
 1. [Interface for ODE based model](https://github.com/cakieslich/introCSB/blob/main/shinyEx/fishing.R): Simple example of how to use R shiny to develop interactive interfaces for ODE-based models. ([Demo](https://kieslich.shinyapps.io/fishing/))
 2. [Interface for ODE based model with report export](https://github.com/cakieslich/introCSB/tree/main/shinyEx/mapk): Advanced example of how to use R shiny to develop interactive interfaces for ODE-based models. Includes the ability to export analysis from the model using an R markdown derived report in PDF format. ([Demo](https://kieslich.shinyapps.io/mapk/))
 
+### Miscellaneous R *shiny* Applications
+In addition to the interactive modules and the R *shiny* examples above, here is a list of miscellaneous applications for dynamic systems modeling.
+1. [Simple interfaces to example dynamic systems.](https://kieslich.shinyapps.io/tanks) 
+2. [Series applications related to stability analysis of linear systems.](https://kieslich.shinyapps.io/ODE_analysis) 
+3. [Practice problems for stability analysis of Lotka-Volterra (predator-prey) systems.](https://kieslich.shinyapps.io/LotkaVolterra) 
+4. [Practice problems for nullcline analysis of Lotka-Volterra (predator-prey) systems.](https://kieslich.shinyapps.io/nullclines)
+5. [Practice problems for stability analysis of S-systems.](https://kieslich.shinyapps.io/S-system)
+6. [Practice problems for building Markov matrices from directed graphs.](https://kieslich.shinyapps.io/MarkovMat) 
 
 ***Citation***: Voit, E.O.: A First Course in Systems Biology. Garland Science, New York, NY, 2017, 2nd edition
