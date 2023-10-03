@@ -2,6 +2,7 @@
 On this page you will find a variety of resources for teaching/learning Computational Systems Biology that have been developed using the R statistical language. These resources include interactive modules that are generally applicable to learning the basics of systems biology modeling, as well as, coding examples for using R to develop and analyze various types of systems biology models. The coding examples also include R *shiny* examples, which provide a template for developing interactive interfaces for systems biology models. Source codes for all interfaces and coding examples are also available. An interactive slide deck, also developed with R *shiny*, that was presented at FOSBE 2022 in a session on Systems Biology Eucation are available [here](https://kieslich.shinyapps.io/fosbe2022/).
 
 ![Schematic of available R resources.](shiny.png)
+*Schematic overview of resources in the introCSB repository.*
 
 ### R Shiny Interactive Modules 
 This is a series of modules that are intended to provide simple interfaces to example systems models and to provide extra practice problems and are intended as a supplement the textbook: A First Course in Systems Biology . The textbook is not needed to be able to use these applications, but may be useful for further explanation.
