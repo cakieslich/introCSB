@@ -13,6 +13,11 @@ This is a series of modules that are intended to provide simple interfaces to ex
 4. [Continuous Dynamic Models](https://kieslich.shinyapps.io/sysBio4/): Provides interfaces to example models based on the canonical models described in pg. 102-105 of Chapter 4: The Mathematics of Biological Systems of A First Course in Systems Biology. The expected outcomes of this module are to learn the basic structure of (i) linear, (ii) Lotka-Voltera, (iii) mass action, and (iv) S-system models. ([Source](https://github.com/cakieslich/introCSB/tree/main/SysBioModules/sysBio4))
 5. [Analysis of Dynamic Models](https://kieslich.shinyapps.io/sysBio5/): Provides interfaces to example models described in Chapter 4: The Mathematics of Biological Systems of A First Course in Systems Biology. The expected outcomes of this module are to learn the fundamentals of stability analysis including: (i) linearization of nonlinear models, (ii) eigenvalue analysis. ([Source](https://github.com/cakieslich/introCSB/tree/main/SysBioModules/sysBio5))
 
+### Interactive Coding Tutorials
+These coding tutorials were developed using the learnr package and initial development was funded through a seed grant from the [CACHE corporation](https://cache.org/):
+
+1. [Introduction to Modeling Biological Systems](https://kieslich.shinyapps.io/intro_modeling_tutorial/): This tutorial introduces basic skills for performing systems-scale modeling of biological systems in R, including model diagrams and ODE based simulations. ([Source](https://github.com/cakieslich/introCSB/blob/main/learnrEx/intro_modeling_tutorial.Rmd))
+
 ### R Coding Examples by Topic
 Below is a list of links to HTML pages with coding examples for a range of topics related to developing and analysiing systems biology models. The examples cover developing systems diagrams and developing/analyzing ODE-based systems models.      
 
