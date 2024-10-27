@@ -1,0 +1,838 @@
+---
+title: "Introduction to Modeling Biological Systems"
+output: learnr::tutorial
+runtime: shiny_prerendered
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(DiagrammeR)
+
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+## Introduction
+
+In this tutorial we will cover the following modeling tasks:
+
+1.  How to generate system diagrams.
+2.  How to perform dynamic simulations of ODE-based models.
+
+### Prerequisite
+
+The tasks in this tutorial require the following packages be installed:
+
+1.  `DiagrammeR` - package for generating graphs and diagrams.
+2.  `deSolve` - package for simulating systems of ordinary differential
+    equations.\
+
+### R Tip: *How to install packages in R*
+
+You can use `install.packages('package')` to install any necessary
+package.
+
+```{r install_packages, echo = FALSE}
+question("Which code installs `DiagrammeR` package successfully? ",
+         answer("`install.packages(DiagrammeR)`", message = "Quotation marks are missing."),
+         answer("`install.packages('diagrammer')`", message = "R package names are case sensitive."),
+         answer("`install.packages('DiagrammeR')`", correct = T), 
+         allow_retry = T)
+```
+
+## DiagrammeR
+
+For generating diagrams, such as though used in visualizing biological
+systems, `DiagrammeR` supports Graphviz. From the DiagrammeR
+documentation:
+
+- Graphviz consists of a graph description language called the DOT
+  language and it also comprises various tools that can process the
+  DOT language. DOT is highly customizable and it allows you to
+  control line colors, arrow shapes, node shapes, and many other
+  layout features.
+  
+- The Graphviz graph specification must begin with a directive stating 
+  whether a directed graph (digraph) or an undirected graph (graph) 
+  is desired. Semantically, this indicates whether or not there is a natural 
+  direction from one of the edge’s nodes to the other. An optional graph ID 
+  follows this and paired curly braces denotes the body of the statement list. 
+
+- Here is the basic structure: `[strict] (graph | digraph) [ID] '{' stmt_list '}'`
+
+- The graph statement, the node statement, and the edge statement are the three most 
+  commonly used statements in the Graphviz DOT language. Graph statements allow for 
+  attributes to be set for all components of the graph. Node statements define and 
+  provide attributes for graph nodes. Edge statements specify the edge operations 
+  between nodes and they supply attributes to the edges. In the examples that follow
+  will be using directed graphs, therefore an edge must be specified using the edge 
+  operator `->`.
+  
+- Within these statements follow statement lists. Thus for a node statement, a list 
+  of nodes is expected. For an edge statement, a list of edge operations. Any of the 
+  list items can optionally have an attribute list (attr_list) which modify the attributes 
+  of either the node or edge.
+  
+More information can be found here: (https://rich-iannone.github.io/DiagrammeR/articles/graphviz-mermaid.html)
+
+```{r grViz, echo = FALSE}
+question("Which psuedocode is correct for using Graphviz for generating SIR graphs?",
+         answer("`DiagrammeR::grViz('digraph{body}')`", correct = T),
+         answer("`DiagrammeR::Graphicviz('digraph{body}')`", message = "`grViz()` function renders graphs"),
+         answer("`DiagrammeR::grViz('graph{body}')`", message = "SIR graphs are directed"), 
+         allow_retry = T)
+```
+
+## Example Graphviz Diagram 
+To start a Graphviz diagram, we will use the `grViz()` function, and pass to it
+a Graphviz statement defining the graph. To initialize a directed graph we will use `digraph` 
+and then define the nodes and edges and specifying the styles, such as the shape of 
+the of nodes etc. See the following link for more details regarding attributes and stules: <https://rich-iannone.github.io/DiagrammeR/articles/graphviz-mermaid.html#graphviz-attributes>. 
+Suggested steps are as follow:
+
+1. Write graph statement.
+2. Write node statement(s).
+3. Write edge statement(s).
+
+Here is an example where nodes (in this case styled as boxes and circles) can be easily defined along with their connections: 
+```{r}
+grViz("digraph boxes_and_circles {
+  # a 'graph' statement
+  graph [overlap = true, fontsize = 10]
+
+  # several 'node' statements
+  node [shape = box,
+        fontname = Helvetica]
+  A; B; C; D; E; F
+
+  node [shape = circle,
+        fixedsize = true,
+        width = 0.9] // sets as circles
+  1; 2; 3; 4; 5; 6; 7; 8
+
+  # several 'edge' statements
+  A->1 B->2 B->3 B->4 C->A
+  1->D E->A 2->4 1->5 1->F
+  E->6 4->6 5->7 6->7 3->8
+
+}")
+
+```
+
+## Diagram example: SIR models
+To introduce the concepts of generating a model diagram and visualizing it 
+using `DiagrammeR`, we will use the SIR models as the motivating example. 
+SIR models are simple epidemiological compartment models that predict
+the spread of an infectious disease. In addition to an infected
+population (I), the model also includes a recovered (R), or at least
+a temporarily immune population, as well as, a susceptible population (S)
+of people who can catch the disease from an infected individual. These
+simple models can be powerful in exploring the effects of the various
+aspects (rates) of the spread of an infection on the size of the
+infected population. 
+
+In the diagram, each population is represented by a "bubble" (node) and each 
+process is represented by an arrow (directed edge) indicating flows of people
+in/out or between the three populations. Each edge in this example is labeled 
+based on the associated rate: birth rate (rB), infection rate (rI), death rate 
+(rD), recovery rate (rR), and susceptibility rate (rS).
+
+In a series of excercises that follows, we will walk through how do generate the
+diagram below using `DiagrammeR`.
+
+```{r SIR, echo = FALSE, eval=TRUE}
+grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+
+# Define signal edge
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+
+# Set rank of nodes equal to align
+{rank = same; OS; S; I; SI; IO} 
+
+}")
+```
+
+## SIR diagram: Graph and node statements
+To initilize the graph, the layout of the graph and the direction should be defined 
+in the a graph statement using the syntax `graph [layout, rankdir]`. For this example, 
+we want to generate a graph with `layout = dot` and `rankdir = TB`. Next, we need to
+define the global styles of the nodes using a node statement: `node [attributes]`.
+The SIR diagram uses `shape = circle` and `style = filled`. Subsequently, we need to
+define the nodes S, I, and R using fillcolor to make S, I, and R, green, red, and blue,
+respectively (i.e. `S [fillcolor = green]`).
+
+```{r SIRinit, exercise = TRUE, exercise.lines = 15}
+grViz("digraph{
+# Graph statement
+
+
+# Define the global styles of the nodes. 
+
+
+# Node statements and node specific styles.  
+
+
+}")
+```
+
+```{r SIRinit-solution}
+grViz("digraph{
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+}")
+```
+
+## SIR diagram: Dummy nodes
+In `Graphviz`/`DiagrammeR` edges can only be added to connect two nodes, but in 
+systems biology diagrams we need to be able describe processes that either only
+enter or exit a node with a origin/destination node. Also, we often want represent 
+how a node can affect a process/flow, such as the signalling edge that accounts 
+for the affect of the size of the infected population on the rate of infection.
+To be able to account for these types of relationships we need to define "dummy"
+nodes that serve as a place holder for these connections. In the SIR example we 
+need a dummy node for the influx into S, called OS, which we define as follows:\
+
+`OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node`\
+
+Use this as a template to add the OS node, plus a similar edge for the outflux 
+from I, IO, and a node for the signaling edge between S and I, SI. 
+
+```{r SIRdummy, exercise = TRUE, exercise.eval = TRUE, exercise.lines = 20}
+grViz("digraph {
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+
+
+}")
+```
+
+```{r SIRdummy-solution}
+grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+}")
+```
+
+## SIR diagram: Edge statements and adding flow edges
+Next, we need to define the global styles of the edges using an edge statement: 
+`edge [attributes]`. The SIR diagram uses `fontsize = 10`. Subsequently, we need to
+define the nodes all of the flow edges represented by the same style solid black 
+lines. This is where we need to use dummy nodes to account for all of the processes
+described earlier. Use the completed diagram below as a guide, and use statements of 
+the type: `node1 -> node2 [label]`. The S to I edges are an exception where S to SI 
+has a label but also has `dir = none` to avoid having an extra arrow, and SI to I does
+not have a label.
+
+```{r SIR, echo = FALSE, eval=TRUE}
+```
+
+```{r SIRflow, exercise = TRUE, exercise.eval = TRUE, exercise.lines = 25}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+
+
+# Define flow edges and label wiith rates
+
+
+}")
+
+```
+
+```{r SIRflow-solution}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+
+}")
+
+```
+
+## SIR diagram: Finishing touches
+To finalize the diagram, all that remains is to add the signaling edge between
+node I and dummy node SI. To style the edge as in the example diagram we need to 
+set tailport = n, style = dashed, fontcolor = blue, and color = blue. Lastly, to 
+get the diagram oriented left to right as in the example we need to set the rank of
+the nodes we want to be aligned to be the same, in this case OS, S, I, SI, and IO, 
+by adding the following statement at the end `{rank = same; OS; S; I; SI; IO} `.
+
+```{r SIR, echo = FALSE, eval=TRUE}
+```
+
+```{r SIRfinal, exercise = TRUE, exercise.eval = TRUE, exercise.lines = 30}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+
+# Define signal edge
+
+
+# Set rank of nodes equal to align
+
+}")
+```
+
+```{r SIRfinal-solution}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+
+# Define signal edge
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+
+# Set rank of nodes equal to align
+{rank = same; OS; S; I; SI; IO} 
+
+}")
+```
+
+## Exercise 1: SIR with quarantine
+Your task is to generate a diagram for a modified SIR model that accounts for quarantine,
+where some portion of the infected population enters quarantined population and eventually 
+enters the recovered population. Starting from the SIR diagram that we just completed, add
+the necessary node(s) and edge(s) to account for quarantine. 
+
+
+```{r SIRQ, exercise = TRUE, exercise.eval = TRUE}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+
+# Define signal edge
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+
+# Set rank of nodes equal to align
+{rank = same; OS; S; I; SI; IO} 
+
+
+}")
+```
+
+```{r SIRQ-solution}
+DiagrammeR::grViz("digraph {
+
+# Graph statement
+graph [layout = dot, rankdir = TB]
+
+# Define the global styles of the nodes. 
+node [shape = circle, style = filled]
+
+# Node statements and node specific styles.  
+S [fillcolor = green]
+I [fillcolor = red]
+R [fillcolor = blue]
+Q [fillcolor = white]
+
+# Edges in graphs must be between nodes, therefore dummy nodes are needed for 
+# signaling edges and input/output edges
+OS [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+SI [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+IO [fixedsize = TRUE, width = 0, height = 0, label = ''] #Dummy node
+
+# Define global edge properties
+edge[fontsize = 10]
+
+# Define flow edges and label wiith rates
+OS -> S [label = 'rB']
+S -> SI [label = 'rI', dir = none]
+SI -> I
+I -> IO [label = 'rD']
+I -> R [label = 'rR']
+R -> S [label = 'rS']
+I -> Q [label = 'rQ']
+Q -> R [label = 'rRQ']
+
+# Define signal edge
+I -> SI [label = '+', tailport = n, style = dashed, fontcolor = blue, color = blue]
+
+# Set rank of nodes equal to align
+{rank = same; OS; S; I; SI; IO} 
+
+}")
+```
+
+## SIR models: Model equations
+
+Now that we have sketched our system in diagram form, a typical next step would be 
+to simulate the model to understand the effect of `parameters` (process/flow rates) 
+on different the `state` (initial population) by defining/solving ordinary differential
+equations (ODEs), like those shown below:
+
+```{r SIRodes, echo=F}
+mainPanel(br(), width=350,
+                 "$$dS = rBirth + rS \\cdot  R - rI \\cdot  S \\cdot  I $$",
+                 "$$dI = rI \\cdot  S \\cdot  I - rR \\cdot  I - rDeath \\cdot  I$$",
+                 "$$dR = rR \\cdot  I - rS \\cdot  R$$"
+               )
+```
+
+## SIR models: Simulating dynamics
+For generating a SIR model, we need to define the connection between the parameters 
+mentioned above, and to fulfill that functions need to be constructed. The
+psuedocode for writing a function in R is as follow:
+
+`function name` \<- `fucntion(independent variables)` {
+
+`body of the function`
+
+}
+
+For analyzing SIR model, it is better to group different `state` and
+`parameters` together, and define a function and set `state` and
+`parameters` as independent variables. One can define any variables as
+below:
+
+```{r sir_model5, exercise = FALSE, exercise.eval = FALSE}
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.0005, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+
+state <- c(S = 1000, #Initial number of susceptible individuals`  
+           I = 10, #Initial number of infected individuals
+           R = 0 #Initial number of recovered individuals
+          )
+```
+
+Then, using ODE equations, we can define SIR model as a function of
+`state`, `parameters` as below which generates change in `state` in a
+`list` format:
+
+```{r sir_model6, exercise = F, exercise.eval = FALSE}
+SIR <- function(state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+```
+
+It is important to note that without the `with` function, the function
+wouldn't work as it doesn't have access to the outside variables `state`
+and `parameters`.
+
+For solving the ODE equations, `deSolve` library needs be installed.
+Using `ode` function and by defining `y` (initial condition), `times`
+(time definition which can be defined using `seq(start, to, interval)`
+function), `func` (functions containing ODEs), and `parms` (parameters),
+ODEs can be solved. `ode` is like ode45 in Matlab and is used to
+simulate systems of ODEs. Note that the function that contains the ODEs
+now needs to have `t` (time) as a variable when defining. Then:
+
+`output <- ode(times, y, func, parms)`
+
+```{r sir_model8, echo = FALSE}
+question("For solving ODE equations of SIR model using variables defined previously, which one 
+         is corrrect?",
+         answer("`y = states`, `times = seq(from = 0,to = 100, by = 1)`, `func = SIR(t, state, parameters)`, `parms = parameters`", correct = T),
+         answer("`y = parameters`, `times = seq(from = 0,to = 100, by = 1)`, `func = SIR(t, state, parameters)`, `parms = state`", message = "`y` would be the `state`"),
+         answer("`y = states`, `times = seq(from = 0,to = 100, by = 1)`, `func = SIR(state, parameters)`, `parms = parameters`", message ="SIR should containe `t` as an independent variable")) 
+         
+```
+
+Complete the following code by defining the an ODE function `SIR` and
+set `t`, `states`, and `parameters` as its variables. Then, simulate
+using `ode` function for 100 days. Make sure to call `deSolve` library
+before using `ode` function.
+
+```{r sir_model9, exercise = TRUE}
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.0005, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+state <- c(S = 1000, #Initial number of susceptible individuals`  
+           I = 10, #Initial number of infected individuals
+           R = 0 #Initial number of recovered individuals
+          )
+```
+
+```{r sir_model9-solution}
+
+SIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+  }
+times <- seq(from = 0,to = 100, by = 1) #Definition of time (initial,final,step size)
+
+#ode is like ode45 in Matlab and is used to simulate systems of ODEs
+out <- ode(y = state,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+```
+
+## Plotting in R
+
+As we solved the ODEs and now have information about how different
+`state` changes as days go by, it is time to analyze our results from
+previous parts. One of the interesting approach to fully understand what
+is happening, is by making meaningful plots. In R programming language,
+`plot` function is used for generating plots.Optionally, you can change
+the style of the plot depending on your application. Colors `col`, line
+width `lwd`, axis labels `xlab` and `ylab` and the plot type `type`, and
+others. can be edited for a better representation. More information can
+be found here
+(<https://www.datamentor.io/r-programming/plot-function/>). Then:
+
+`plot(x, y, col, lwd, xlab, ylab)`
+
+You can add more functions to the plot through a chosen plot type `type`
+such as `lines`:
+
+`lines(x, y, col, lwt, xlab, ylab)`
+
+And at the end, you can edit the legends:
+
+`legends(location, title, col, lwd)`
+
+You can include a vector to represent multiple plots in `legend`.
+
+For example, you want to make a plot of positive COVID-19 and flue cases
+in a small town in 2020 by month.
+
+```{r plot1, exercise = TRUE, exercise.eval = TRUE}
+month = c(1,2,3,4,5,6,7,8,9,10,11,12)
+covid.positive = c(7, 29, 85, 92, 107, 188, 159, 150, 150, 118, 67, 30)
+flue.poistive = c(12, 29, 10, 9, 8, 12, 3, 0, 0, 3, 1, 0)
+plot(month, covid.positive, col = 2, type = "l", xlab = "month", ylab = "positive cases") 
+lines(month, flue.poistive, col = 3, type = "l")
+legend("topleft", legend = c("COVID-19 cases", "Flue cases"), col = c(2,3), lwd = 1)
+```
+
+## Slicing and Indexing in R
+
+Indexing and Slicing are operations by which one select desired values
+from a vector. In general, this feature of R is very useful, as you
+might want to analyze part of your result, and then compare it to
+others. For example, you have a vector `A= c(1,2,3,4,5)`, and you want
+to extract `c(2,3,4)`, then:
+
+```{r slicing1, exercise = TRUE, exercise.eval = TRUE}
+A = c(1,2,3,4,5)
+A[2:4]
+```
+
+Previously, we generated a data frame containing different `state` (`S`,
+`I` and `R`) at different time, and called it `out`. vectors are used to
+hold values of the same datatype; however, data frames are 2 dimensional
+(rows and columns) objects. If you are only interested in parts of your
+result, then:
+
+`out[row(s),column(s)]`
+
+For example, you are only interested in the data from the first four
+days, then:
+
+`out[1:5,]`
+
+It is important to note that if you leave the row (or column) blank, R
+will select entire rows (columns). Alternatively, you can extract
+columns (or rows) by their IDs if they have one. `ode` generates the
+results with the corresponding IDs, so you can access data of different
+types of population through their IDs.
+
+```{r slicing2, echo = FALSE}
+question("You are only interersted in the Recovered population from day five to the end of the day ten. Which one is the correct syntax to extract the recovered population from `out`?",
+         answer("`out[4:11 'R']`", message = "`,` is needed."),
+         answer("`out[4:11, R]`", message = "R should be in quotaion mark."),
+         answer("`out[4:11]`", message = "Recovered population must be selected"), 
+         answer("`out[4:11, 'R']`", correct = TRUE), 
+         allow_retry = TRUE
+)
+```
+
+## SIR model: Plotting time-dependent populations
+Through `plot` function and slicing, we can now plot the population size
+of different `state` versus time.
+
+```{r sirplot, exercise = TRUE, exercise.eval = TRUE}
+library("deSolve")
+SIR <- function(t, state, parameters) {# SIR is the name of this function with inputs t, state, parameters 
+  # with function executes lines in {} (differential equations) using values defined in state and parameters
+  with(as.list(c(state, parameters)),{  
+      dS <- rBirth + rS*R - rI*S*I #ODE for susceptible population
+      dI <- rI*S*I - rR*I - rDeath*I #ODE for infected population
+      dR <- rR*I - rS*R #ODE for recovered population
+      list(c(dS, dI, dR)) #Return change in variables
+    })
+}
+
+parameters <- c(rBirth = 3, #Birth rate
+                rDeath = 0.02, #Death rate
+                rI = 0.0005, #Infection rate
+                rR = 0.05, #Recovery rate
+                rS = 0.01 #Loss of immunity rate
+                )
+
+state <- c(S = 1000, #Initial number of susceptible individuals  
+           I = 10, #Initial number of infected individuals
+           R = 0 #Initial number of recovered individuals
+          )
+
+times <- seq(from = 0,to = 100, by = 1) #Definition of time (initial,final,step size)
+
+#ode is like ode45 in Matlab and is used to simulate systems of ODEs
+out <- ode(y = state,#Initial conditions 
+           times = times, #Time definition
+           func = SIR, #Name of function defining ODEs
+           parms = parameters #Parameter values
+           )
+
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000)) #Plot S population vs time
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l") #Plot I population vs time
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l") #Plot R population vs time
+legend("topright",legend = c("S","I","R"),col = c(3,2,4),lwd = 2) #Define plot legend
+
+```
+
+## Exercise 2: Simulate SIRQ model
+
+Simulate SIRQ model for 100 days with following variables:
+`parameters <- c(rBirth = 3, rDeath = 0.02, rI = 0.0005, rR = 0.05, rS = 0.01, rQ = 0.1, rRI = 0.01)`
+`state <- c(S = 1000,  I = 10, R = 0, Q = 0)`
+and plot the population size of different `state` versus time.
+```{r sirq1, exercise = TRUE}
+
+```
+
+```{r sirq1-solution}
+
+SIRQ <- function(t, state, parameters) {
+    with(as.list(c(state, parameters)), {
+      dS <- rBirth + rS*R - rI*S*I + rRI*Q
+      dI <- rI*S*I - rR*I - rDeath*I - rQ*I
+      dR <- rR*I - rS*R
+      dQ <- rQ*I - rRI*Q
+      list(c(dS, dI, dR, dQ))
+    })
+}
+
+parameters <- c(rBirth = 3, 
+                rDeath = 0.02,
+                rI = 0.0005, 
+                rR = 0.05, 
+                rS = 0.01,
+                rQ = 0.1, 
+                rRI = 0.01
+                )
+
+state <- c(S = 1000,  
+           I = 10, 
+           R = 0,
+           Q = 0
+          )
+
+times <- seq(from = 0,to = 100, by = 1)
+
+out <- ode(y = state, 
+           times = times, 
+           func = SIRQ, 
+           parms = parameters
+           )
+
+plot(out[,"time"],out[,"S"],col=3,lwd=2,type="l",xlab="Time",ylab="Population size",ylim=c(0,1000))
+lines(out[,"time"],out[,"I"],col=2,lwd=2,type="l")
+lines(out[,"time"],out[,"R"],col=4,lwd=2,type="l")
+lines(out[,"time"],out[,"Q"],col=1,lwd=2,type="l")
+legend("topright",legend = c("S","I","R","Q"),col = c(3,2,4,1),lwd = 2)
+```
